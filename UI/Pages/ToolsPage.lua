@@ -176,17 +176,20 @@ function ToolsPage:CreateFrameStack()
                 isLoaded = loadSucceeded == true
             end
 
+            local frameStackTooltip = _G.FrameStackTooltip
+            local toggleFrameStack = _G.FrameStackTooltip_ToggleDefaults
+
             if not isLoaded
-                or not FrameStackTooltip
-                or type(FrameStackTooltip.IsVisible) ~= "function"
-                or type(FrameStackTooltip_ToggleDefaults) ~= "function" then
+                or not frameStackTooltip
+                or type(frameStackTooltip.IsVisible) ~= "function"
+                or type(toggleFrameStack) ~= "function" then
 
                 self:RefreshFrameStack()
                 self:ReportFrameStackError(loadError)
                 return
             end
 
-            FrameStackTooltip_ToggleDefaults()
+            toggleFrameStack()
         end
 
         self:RefreshFrameStack()
@@ -308,13 +311,15 @@ function ToolsPage:RefreshLuaErrors()
 end
 
 function ToolsPage:IsFrameStackActive()
-    if not FrameStackTooltip
-        or type(FrameStackTooltip.IsVisible) ~= "function" then
+    local frameStackTooltip = _G.FrameStackTooltip
+
+    if not frameStackTooltip
+        or type(frameStackTooltip.IsVisible) ~= "function" then
 
         return false
     end
 
-    return FrameStackTooltip:IsVisible() and true or false
+    return frameStackTooltip:IsVisible() and true or false
 end
 
 function ToolsPage:RefreshFrameStack()
