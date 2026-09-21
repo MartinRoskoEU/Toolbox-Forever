@@ -1,0 +1,23 @@
+## Interface: 16001
+## Title: Toolbox
+## Notes: Developer toolbox for World of Warcraft: Forever
+## Author: Nendis
+## Version: 0.1.0
+## IconTexture: Interface\AddOns\Toolbox\Assets\toolbox_icon_128.png
+## AddonCompartmentFunc: Toolbox_OnAddonCompartmentClick
+
+Core\Namespace.lua
+
+UI\Components\Window.lua
+UI\Components\NavigationButton.lua
+UI\Components\CheckBox.lua
+UI\Components\ExportDialog.lua
+
+UI\Pages\Page.lua
+UI\Pages\ConsolePage.lua
+UI\Pages\ToolsPage.lua
+UI\Pages\AtlasPage.lua
+
+UI\MainWindow.lua
+
+Core\Init.lua

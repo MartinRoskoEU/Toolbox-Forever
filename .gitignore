@@ -1,0 +1,12 @@
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local editor and temporary files
+.idea/
+*.bak
+*.log
+*.tmp
+*.swp
+*~
