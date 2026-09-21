@@ -159,16 +159,16 @@ function ToolsPage:CreateFrameStack()
 
     self.FrameStackCheckBox:SetOnClick(function(checkBox)
         local shouldEnable = checkBox:IsChecked() and true or false
-        local isEnabled = C_CVar.GetCVarBool("fstack_enabled")
+        local isActive = self:IsFrameStackActive()
 
-        if shouldEnable ~= isEnabled then
+        if shouldEnable ~= isActive then
             local _, isLoaded = C_AddOns.IsAddOnLoaded(
                 "Blizzard_DebugTools"
             )
 
             local loadError
 
-            if not isLoaded then
+            if shouldEnable and not isLoaded then
                 local loadSucceeded
                 loadSucceeded, loadError = C_AddOns.LoadAddOn(
                     "Blizzard_DebugTools"
@@ -177,6 +177,8 @@ function ToolsPage:CreateFrameStack()
             end
 
             if not isLoaded
+                or not FrameStackTooltip
+                or type(FrameStackTooltip.IsVisible) ~= "function"
                 or type(FrameStackTooltip_ToggleDefaults) ~= "function" then
 
                 self:RefreshFrameStack()
@@ -305,8 +307,18 @@ function ToolsPage:RefreshLuaErrors()
     )
 end
 
+function ToolsPage:IsFrameStackActive()
+    if not FrameStackTooltip
+        or type(FrameStackTooltip.IsVisible) ~= "function" then
+
+        return false
+    end
+
+    return FrameStackTooltip:IsVisible() and true or false
+end
+
 function ToolsPage:RefreshFrameStack()
     self.FrameStackCheckBox:SetChecked(
-        C_CVar.GetCVarBool("fstack_enabled")
+        self:IsFrameStackActive()
     )
 end

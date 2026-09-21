@@ -277,6 +277,7 @@ function ConsolePage:CreateOutput()
     local page = self.Page.Frame
 
     self.OutputLines = {}
+    self.OutputMessageHistory = {}
 
     self.Output = CreateFrame(
         "Frame",
@@ -414,10 +415,10 @@ function ConsolePage:CreateOutput()
 
     self.OutputHint:SetPoint(
         "LEFT",
-        self.ExportOutputButton,
-        "LEFT",
-        -8,
-        0
+        self.Output,
+        "BOTTOMLEFT",
+        8,
+        -18
     )
 
     self.OutputHint:SetPoint(
@@ -473,38 +474,74 @@ function ConsolePage:ClearOutput()
     end
 
     wipe(self.OutputLines)
+    wipe(self.OutputMessageHistory)
 
     self.ExportOutputButton:Disable()
 end
 
-function ConsolePage:StoreOutputLine(text)
+function ConsolePage:StoreOutputLine(text, red, green, blue)
     table.insert(
         self.OutputLines,
         text
     )
 
+    table.insert(
+        self.OutputMessageHistory,
+        {
+            Text = text,
+            Red = red,
+            Green = green,
+            Blue = blue,
+        }
+    )
+
     if #self.OutputLines > MAX_OUTPUT_LINES then
         table.remove(self.OutputLines, 1)
+        table.remove(self.OutputMessageHistory, 1)
+        return true
+    end
 
-        local removeOldest = true
+    return false
+end
 
-        self.OutputMessages:RemoveMessagesByPredicate(function()
-            if removeOldest then
-                removeOldest = false
-                return true
-            end
+function ConsolePage:RefreshOutputMessages()
+    self.OutputMessages:ResetSelectingText()
+    self.OutputMessages:Clear()
 
-            return false
-        end)
+    for _, message in ipairs(self.OutputMessageHistory) do
+        self.OutputMessages:BackFillMessage(
+            message.Text,
+            message.Red,
+            message.Green,
+            message.Blue
+        )
+    end
+end
+
+function ConsolePage:AddOutputMessage(text, red, green, blue)
+    local didRollOver = self:StoreOutputLine(
+        text,
+        red,
+        green,
+        blue
+    )
+
+    if didRollOver then
+        self:RefreshOutputMessages()
+    else
+        self.OutputMessages:BackFillMessage(
+            text,
+            red,
+            green,
+            blue
+        )
     end
 end
 
 function ConsolePage:WriteOutput(...)
     local text = strjoin(" ", tostringall(...))
 
-    self:StoreOutputLine(text)
-
-    self.OutputMessages:BackFillMessage(text)
+    self:AddOutputMessage(text)
 
     self.ExportOutputButton:Enable()
 end
@@ -565,9 +602,7 @@ end
 function ConsolePage:WriteError(message)
     local text = tostring(message)
 
-    self:StoreOutputLine(text)
-
-    self.OutputMessages:BackFillMessage(
+    self:AddOutputMessage(
         text,
         1,
         0.2,
