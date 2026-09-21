@@ -20,7 +20,6 @@ function Toolbox_OnAddonCompartmentClick(addonName, buttonName)
 end
 
 function Toolbox:Load()
-    Toolbox.UI.MainWindow:Initialize()
     self.Loaded = true
 end
 

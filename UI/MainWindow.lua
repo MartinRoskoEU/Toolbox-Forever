@@ -17,7 +17,7 @@ function MainWindow:Initialize()
     self:CreatePages()
     self:SetNavigation()
 
-    self:SelectPage(self.ConsolePage.Page, self.ConsoleButton)
+    self:SelectPage(self.ConsolePage, self.ConsoleButton)
 end
 
 function MainWindow:CreateLayout()
@@ -42,13 +42,8 @@ end
 
 function MainWindow:CreatePages()
     self.ConsolePage = Toolbox.UI.ConsolePage
-    self.ConsolePage:Initialize(self.Content)
-
     self.ToolsPage = Toolbox.UI.ToolsPage
-    self.ToolsPage:Initialize(self.Content)
-
     self.AtlasPage = Toolbox.UI.AtlasPage
-    self.AtlasPage:Initialize(self.Content)
 end
 
 function MainWindow:SetNavigation()
@@ -67,7 +62,7 @@ function MainWindow:SetNavigation()
 
     self.ConsoleButton.Frame:SetScript("OnClick", function()
         self:SelectPage(
-            self.ConsolePage.Page,
+            self.ConsolePage,
             self.ConsoleButton
         )
     end)
@@ -87,7 +82,7 @@ function MainWindow:SetNavigation()
 
     self.ToolsButton.Frame:SetScript("OnClick", function()
         self:SelectPage(
-            self.ToolsPage.Page,
+            self.ToolsPage,
             self.ToolsButton
         )
     end)
@@ -107,13 +102,15 @@ function MainWindow:SetNavigation()
 
     self.AtlasButton.Frame:SetScript("OnClick", function()
         self:SelectPage(
-            self.AtlasPage.Page,
+            self.AtlasPage,
             self.AtlasButton
         )
     end)
 end
 
 function MainWindow:SelectPage(page, button)
+    page:Initialize(self.Content)
+
     if self.ActivePage then
         self.ActivePage:Hide()
     end
@@ -122,7 +119,7 @@ function MainWindow:SelectPage(page, button)
         self.ActiveButton:SetSelected(false)
     end
 
-    self.ActivePage = page
+    self.ActivePage = page.Page
     self.ActiveButton = button
 
     self.ActivePage:Show()
@@ -130,5 +127,6 @@ function MainWindow:SelectPage(page, button)
 end
 
 function MainWindow:Toggle()
+    self:Initialize()
     self.Window:Toggle()
 end

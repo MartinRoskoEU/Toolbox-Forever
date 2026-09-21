@@ -6,6 +6,7 @@ Toolbox.UI.ExportDialog = ExportDialog
 
 local DEFAULT_WIDTH = 650
 local DEFAULT_HEIGHT = 420
+local SCREEN_MARGIN = 32
 
 function ExportDialog:Initialize()
     if self.Window then
@@ -237,9 +238,19 @@ end
 function ExportDialog:Show(title, text, width, height)
     self:Initialize()
 
-    self.Window.Frame:SetSize(
-        width or DEFAULT_WIDTH,
-        height or DEFAULT_HEIGHT
+    local maximumWidth = math.max(
+        UIParent:GetWidth() - SCREEN_MARGIN,
+        1
+    )
+
+    local maximumHeight = math.max(
+        UIParent:GetHeight() - SCREEN_MARGIN,
+        1
+    )
+
+    self.Window:SetSize(
+        math.max(1, math.min(width or DEFAULT_WIDTH, maximumWidth)),
+        math.max(1, math.min(height or DEFAULT_HEIGHT, maximumHeight))
     )
 
     self.Window:SetTitle(

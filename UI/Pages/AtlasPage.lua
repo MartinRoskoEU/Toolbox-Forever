@@ -21,6 +21,7 @@ end
 function AtlasPage:CreateLayout()
     self:CreateBrowser()
     self:CreateSearch()
+    self:LoadAtlases()
 end
 
 function AtlasPage:CreateBrowser()
@@ -265,7 +266,6 @@ function AtlasPage:CreateAtlasList()
         end
     )
 
-    self:LoadAtlases()
 end
 
 function AtlasPage:CreatePreview()
@@ -450,8 +450,24 @@ function AtlasPage:LoadAtlases()
     table.sort(atlases)
 
     self.Atlases = atlases
+    self.NormalizedAtlases = {}
+
+    for index, atlasName in ipairs(self.Atlases) do
+        self.NormalizedAtlases[index] = string.lower(atlasName)
+    end
 
     self:ApplySearchFilter("")
+end
+
+function AtlasPage:ClearAtlasPreview()
+    self.SelectedAtlas = nil
+    self.SelectedAtlasWidth = nil
+    self.SelectedAtlasHeight = nil
+
+    self.PreviewTexture:SetTexture(nil)
+    self.PreviewName:SetText("")
+    self.PreviewSize:SetText("")
+    self.ExportButton:Disable()
 end
 
 function AtlasPage:ShowAtlasPreview(atlasName)
@@ -592,29 +608,45 @@ function AtlasPage:SetupKeyboard()
 end
 
 function AtlasPage:ApplySearchFilter(searchText)
-    local dataProvider = CreateDataProvider()
+    local filteredAtlases = {}
+    local selectedAtlas = self.SelectedAtlas
+    local selectedAtlasFound = false
 
     searchText = string.lower(
         strtrim(searchText or "")
     )
 
-    for _, atlasName in ipairs(self.Atlases) do
+    for index, atlasName in ipairs(self.Atlases) do
         if searchText == ""
             or string.find(
-                string.lower(atlasName),
+                self.NormalizedAtlases[index],
                 searchText,
                 1,
                 true
             ) then
 
-            dataProvider:Insert(atlasName)
+            table.insert(filteredAtlases, atlasName)
+
+            if atlasName == selectedAtlas then
+                selectedAtlasFound = true
+            end
         end
     end
+
+    local dataProvider = CreateDataProvider(filteredAtlases)
 
     self.AtlasScrollBox:SetDataProvider(
         dataProvider,
         ScrollBoxConstants.DiscardScrollPosition
     )
+
+    if selectedAtlasFound then
+        self.AtlasSelectionBehavior:SelectElementData(
+            selectedAtlas
+        )
+    else
+        self:ClearAtlasPreview()
+    end
 end
 
 function AtlasPage:ExportSelectedAtlas()

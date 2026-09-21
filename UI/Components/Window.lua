@@ -26,6 +26,7 @@ function Window:CreateFrame(width, height)
 
     self.Frame:SetSize(width, height)
     self.Frame:SetPoint("CENTER")
+    self.Frame:SetClampedToScreen(true)
 
     self.Frame:SetFrameStrata("DIALOG")
     self.Frame:EnableMouse(true)

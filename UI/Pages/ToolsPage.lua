@@ -162,12 +162,51 @@ function ToolsPage:CreateFrameStack()
         local isEnabled = C_CVar.GetCVarBool("fstack_enabled")
 
         if shouldEnable ~= isEnabled then
-            C_AddOns.LoadAddOn("Blizzard_DebugTools")
+            local _, isLoaded = C_AddOns.IsAddOnLoaded(
+                "Blizzard_DebugTools"
+            )
+
+            local loadError
+
+            if not isLoaded then
+                local loadSucceeded
+                loadSucceeded, loadError = C_AddOns.LoadAddOn(
+                    "Blizzard_DebugTools"
+                )
+                isLoaded = loadSucceeded == true
+            end
+
+            if not isLoaded
+                or type(FrameStackTooltip_ToggleDefaults) ~= "function" then
+
+                self:RefreshFrameStack()
+                self:ReportFrameStackError(loadError)
+                return
+            end
+
             FrameStackTooltip_ToggleDefaults()
         end
 
         self:RefreshFrameStack()
     end)
+end
+
+function ToolsPage:ReportFrameStackError(loadError)
+    if loadError then
+        loadError = " " .. tostring(loadError)
+    else
+        loadError = " Required function is unavailable."
+    end
+
+    local message =
+        "Unable to use Blizzard frame-stack tools."
+        .. loadError
+
+    if Toolbox.UI.ConsolePage.Page then
+        Toolbox.UI.ConsolePage:WriteError(message)
+    else
+        print("Toolbox: " .. message)
+    end
 end
 
 function ToolsPage:CreateActions()

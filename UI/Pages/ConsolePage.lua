@@ -4,6 +4,26 @@ local ConsolePage = {}
 
 Toolbox.UI.ConsolePage = ConsolePage
 
+-- Keep exported output aligned with the visible message history.
+local MAX_OUTPUT_LINES = 1000
+
+local function PackResults(...)
+    return {
+        Count = select("#", ...),
+        ...,
+    }
+end
+
+local function CreateRuntimeTraceback(message)
+    local stack = debugstack(2)
+
+    if stack and stack ~= "" then
+        return tostring(message) .. "\n" .. stack
+    end
+
+    return tostring(message)
+end
+
 function ConsolePage:Initialize(parent)
     if self.Page then
         return
@@ -15,7 +35,29 @@ function ConsolePage:Initialize(parent)
     )
 
     self:CreateLayout()
+    self:CreateEnvironment()
     self:SetupKeyboard()
+end
+
+function ConsolePage:CreateEnvironment()
+    self.EnvironmentPrint = function(...)
+        self:WriteOutput(...)
+    end
+
+    self.Environment = {
+        print = self.EnvironmentPrint,
+    }
+
+    self.Environment._G = self.Environment
+
+    self.EnvironmentMetatable = {
+        __index = _G,
+    }
+
+    setmetatable(
+        self.Environment,
+        self.EnvironmentMetatable
+    )
 end
 
 function ConsolePage:CreateLayout()
@@ -307,7 +349,7 @@ function ConsolePage:CreateOutput()
 
     self.OutputMessages:SetJustifyH("LEFT")
     self.OutputMessages:SetTextCopyable(true)
-    self.OutputMessages:SetMaxLines(1000)
+    self.OutputMessages:SetMaxLines(MAX_OUTPUT_LINES)
 
     self.OutputScrollBar = CreateFrame(
         "EventFrame",
@@ -422,6 +464,7 @@ function ConsolePage:ClearOutput()
     self.OutputMessages:ResetSelectingText()
     self.OutputMessages:Clear()
 
+    -- WoW: Forever can otherwise leave cleared text selectable and copyable.
     if self.OutputMessages.visibleLines then
         for _, line in ipairs(self.OutputMessages.visibleLines) do
             line:SetText("")
@@ -434,13 +477,32 @@ function ConsolePage:ClearOutput()
     self.ExportOutputButton:Disable()
 end
 
-function ConsolePage:WriteOutput(...)
-    local text = strjoin(" ", tostringall(...))
-
+function ConsolePage:StoreOutputLine(text)
     table.insert(
         self.OutputLines,
         text
     )
+
+    if #self.OutputLines > MAX_OUTPUT_LINES then
+        table.remove(self.OutputLines, 1)
+
+        local removeOldest = true
+
+        self.OutputMessages:RemoveMessagesByPredicate(function()
+            if removeOldest then
+                removeOldest = false
+                return true
+            end
+
+            return false
+        end)
+    end
+end
+
+function ConsolePage:WriteOutput(...)
+    local text = strjoin(" ", tostringall(...))
+
+    self:StoreOutputLine(text)
 
     self.OutputMessages:BackFillMessage(text)
 
@@ -469,24 +531,19 @@ function ConsolePage:Run()
         return
     end
 
-    local environment = {
-        print = function(...)
-            self:WriteOutput(...)
-        end,
-    }
+    self.Environment.print = self.EnvironmentPrint
+    self.Environment._G = self.Environment
 
-    environment._G = environment
+    setmetatable(
+        self.Environment,
+        self.EnvironmentMetatable
+    )
 
-    setmetatable(environment, {
-        __index = _G,
-        __newindex = _G,
-    })
+    setfenv(chunk, self.Environment)
 
-    setfenv(chunk, environment)
-
-    local results = {
-        pcall(chunk)
-    }
+    local results = PackResults(
+        xpcall(chunk, CreateRuntimeTraceback)
+    )
 
     local success = results[1]
 
@@ -498,7 +555,7 @@ function ConsolePage:Run()
         return
     end
 
-    for i = 2, #results do
+    for i = 2, results.Count do
         self:WriteOutput(
             results[i]
         )
@@ -508,10 +565,7 @@ end
 function ConsolePage:WriteError(message)
     local text = tostring(message)
 
-    table.insert(
-        self.OutputLines,
-        text
-    )
+    self:StoreOutputLine(text)
 
     self.OutputMessages:BackFillMessage(
         text,
