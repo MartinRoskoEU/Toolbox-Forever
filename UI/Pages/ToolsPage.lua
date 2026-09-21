@@ -176,8 +176,11 @@ function ToolsPage:CreateFrameStack()
                 isLoaded = loadSucceeded == true
             end
 
-            local frameStackTooltip = _G.FrameStackTooltip
-            local toggleFrameStack = _G.FrameStackTooltip_ToggleDefaults
+            local frameStackTooltip = rawget(_G, "FrameStackTooltip")
+            local toggleFrameStack = rawget(
+                _G,
+                "FrameStackTooltip_ToggleDefaults"
+            )
 
             if not isLoaded
                 or not frameStackTooltip
@@ -311,7 +314,7 @@ function ToolsPage:RefreshLuaErrors()
 end
 
 function ToolsPage:IsFrameStackActive()
-    local frameStackTooltip = _G.FrameStackTooltip
+    local frameStackTooltip = rawget(_G, "FrameStackTooltip")
 
     if not frameStackTooltip
         or type(frameStackTooltip.IsVisible) ~= "function" then
