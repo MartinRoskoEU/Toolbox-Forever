@@ -1,0 +1,8 @@
+package-as: Toolbox
+
+ignore:
+  - .vscode
+  - .gitignore
+  - README.md
+
+license-output: LICENSE
