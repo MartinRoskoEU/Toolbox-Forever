@@ -22,7 +22,6 @@
         "CreateAnchor",
         "SCROLLING_MESSAGE_FRAME_INSERT_MODE_TOP",
         "ReloadUI",
-        "FrameStackTooltip_ToggleDefaults",
         "CreateScrollBoxListLinearView",
         "CreateDataProvider",
         "SelectionBehaviorMixin",
