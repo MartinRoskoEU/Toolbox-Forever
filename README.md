@@ -1,6 +1,6 @@
 # Toolbox
 
-Toolbox is an in-game developer utility addon for **World of Warcraft: Forever**. It collects a Lua console, common debugging controls, and a texture-atlas browser in a single movable window.
+Toolbox is an in-game developer utility addon for **World of Warcraft: Forever**. It collects a Lua console, common debugging controls, texture-atlas browsing, and SoundKit exploration in a single movable window.
 
 This repository is specifically maintained for the World of Warcraft: Forever version of the addon.
 
@@ -27,10 +27,22 @@ This repository is specifically maintained for the World of Warcraft: Forever ve
 - Move through the filtered list with the up and down arrow keys.
 - Export the selected atlas name to a copyable text dialog.
 
+### Sound browser
+
+- Browse the SoundKits exposed through Blizzard's `SOUNDKIT` table.
+- Filter SoundKit names with a case-insensitive search.
+- Move through the filtered list with the up and down arrow keys.
+- View the selected SoundKit name and numeric SoundKit ID.
+- Play the selected SoundKit directly in-game.
+- Stop the currently playing SoundKit.
+- Automatically stop playback when changing selection, filtering out the selected SoundKit, leaving the Sounds page, or closing Toolbox.
+- Track natural sound completion through `SOUNDKIT_FINISHED`.
+- Export the selected SoundKit ID to a copyable text dialog.
+
 ### Interface
 
 - Open or close Toolbox from the game's addon compartment.
-- Navigate between the Console, Tools, and Atlas pages in a movable window.
+- Navigate between the Console, Tools, Atlas, and Sounds pages in a movable window.
 - Use reusable window, navigation, checkbox, page, and text-export components.
 
 ## Project structure
@@ -40,15 +52,15 @@ Toolbox/
 |-- Assets/
 |   `-- toolbox_icon_128.png     Addon icon
 |-- Core/
-|   |-- Namespace.lua           Shared addon namespace
-|   `-- Init.lua                Addon loading and compartment entry point
+|   |-- Namespace.lua            Shared addon namespace
+|   `-- Init.lua                 Addon loading and compartment entry point
 |-- UI/
-|   |-- Components/             Reusable window and control components
-|   |-- Pages/                  Console, tools, and atlas pages
-|   `-- MainWindow.lua          Main window layout and navigation
+|   |-- Components/              Reusable window and control components
+|   |-- Pages/                   Console, tools, atlas, and sound pages
+|   `-- MainWindow.lua           Main window layout and navigation
 |-- .vscode/
-|   `-- settings.json           Lua 5.1 and WoW API editor settings
-`-- Toolbox.toc                 Addon metadata and file load order
+|   `-- settings.json            Lua 5.1 and WoW API editor settings
+`-- Toolbox.toc                  Addon metadata and file load order
 ```
 
 ## Installation
@@ -61,9 +73,9 @@ Toolbox/
 
 ## Development notes
 
-- The addon metadata currently declares interface version `16001` and addon version `0.1.0`.
+- The addon metadata currently declares interface version `16001` and addon version `0.1.1`.
 - Source files use the World of Warcraft Lua 5.1 environment and Blizzard UI APIs.
 - File load order is defined in `Toolbox.toc`; update it when adding source files that must load at startup.
 - The project has no bundled third-party libraries and does not declare saved variables.
-- The console executes Lua in the live game environment. Run only code you understand, because it can read and modify game-accessible global state.
+- The console executes Lua in the live game environment. Run only code you understand, because it can read and modify game-accessible state.
 - The included VS Code settings target Lua 5.1 and reference annotations from the Ketho WoW API extension.

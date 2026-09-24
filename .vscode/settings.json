@@ -26,6 +26,7 @@
         "CreateDataProvider",
         "SelectionBehaviorMixin",
         "ScrollBoxConstants",
-        "SearchBoxTemplate_OnTextChanged"
+        "SearchBoxTemplate_OnTextChanged",
+        "SOUNDKIT"
     ]
 }

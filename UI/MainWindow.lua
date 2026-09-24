@@ -44,6 +44,7 @@ function MainWindow:CreatePages()
     self.ConsolePage = Toolbox.UI.ConsolePage
     self.ToolsPage = Toolbox.UI.ToolsPage
     self.AtlasPage = Toolbox.UI.AtlasPage
+    self.SoundPage = Toolbox.UI.SoundPage
 end
 
 function MainWindow:SetNavigation()
@@ -106,6 +107,27 @@ function MainWindow:SetNavigation()
             self.AtlasButton
         )
     end)
+
+    self.SoundButton = Toolbox.Classes.NavigationButton:New(
+        self.Navigation,
+        "Sounds"
+    )
+
+    self.SoundButton.Frame:SetPoint(
+        "TOPLEFT",
+        self.AtlasButton.Frame,
+        "BOTTOMLEFT",
+        0,
+        -4
+    )
+
+    self.SoundButton.Frame:SetScript("OnClick", function()
+        self:SelectPage(
+            self.SoundPage,
+            self.SoundButton
+        )
+    end)
+
 end
 
 function MainWindow:SelectPage(page, button)
