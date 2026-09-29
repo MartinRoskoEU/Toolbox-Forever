@@ -1,6 +1,6 @@
 # Toolbox
 
-Toolbox is an in-game developer utility addon for **World of Warcraft: Forever**. It collects a Lua console, common debugging controls, texture-atlas browsing, and SoundKit exploration in a single movable window.
+Toolbox is an in-game developer utility addon for **World of Warcraft: Forever**. It collects a Lua console, common debugging controls, texture-atlas browsing, SoundKit exploration, and an API browser in a single movable window.
 
 This repository is specifically maintained for the World of Warcraft: Forever version of the addon.
 
@@ -39,10 +39,16 @@ This repository is specifically maintained for the World of Warcraft: Forever ve
 - Track natural sound completion through `SOUNDKIT_FINISHED`.
 - Export the selected SoundKit ID to a copyable text dialog.
 
+### API browser
+
+- Browse documented API namespaces, functions, events, structures, enumerations, and constants.
+- Search the API catalog and open detailed entries with available arguments, returns, payloads, fields, values, properties, metadata, and documentation.
+- Return to the catalog with the current search and scroll position preserved.
+
 ### Interface
 
 - Open or close Toolbox from the game's addon compartment.
-- Navigate between the Console, Tools, Atlas, and Sounds pages in a movable window.
+- Navigate between the Console, Tools, Atlas, Sounds, and API pages in a movable window.
 - Use reusable window, navigation, checkbox, page, and text-export components.
 
 ## Project structure
@@ -56,7 +62,7 @@ Toolbox/
 |   `-- Init.lua                 Addon loading and compartment entry point
 |-- UI/
 |   |-- Components/              Reusable window and control components
-|   |-- Pages/                   Console, tools, atlas, and sound pages
+|   |-- Pages/                   Console, tools, atlas, sound, and API pages
 |   `-- MainWindow.lua           Main window layout and navigation
 |-- .vscode/
 |   `-- settings.json            Lua 5.1 and WoW API editor settings
@@ -73,7 +79,7 @@ Toolbox/
 
 ## Development notes
 
-- The addon metadata currently declares interface version `16001` and addon version `0.1.1`.
+- The addon metadata currently declares interface version `16001` and addon version `0.1.2`.
 - Source files use the World of Warcraft Lua 5.1 environment and Blizzard UI APIs.
 - File load order is defined in `Toolbox.toc`; update it when adding source files that must load at startup.
 - The project has no bundled third-party libraries and does not declare saved variables.

@@ -6,3 +6,7 @@ ignore:
   - README.md
 
 license-output: LICENSE
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
