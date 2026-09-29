@@ -69,12 +69,12 @@ function MainWindow:SetNavigation()
         )
     end)
 
-    self.ToolsButton = Toolbox.Classes.NavigationButton:New(
+    self.APIButton = Toolbox.Classes.NavigationButton:New(
         self.Navigation,
-        "Tools"
+        "API"
     )
 
-    self.ToolsButton.Frame:SetPoint(
+    self.APIButton.Frame:SetPoint(
         "TOPLEFT",
         self.ConsoleButton.Frame,
         "BOTTOMLEFT",
@@ -82,10 +82,10 @@ function MainWindow:SetNavigation()
         -4
     )
 
-    self.ToolsButton.Frame:SetScript("OnClick", function()
+    self.APIButton.Frame:SetScript("OnClick", function()
         self:SelectPage(
-            self.ToolsPage,
-            self.ToolsButton
+            self.APIPage,
+            self.APIButton
         )
     end)
 
@@ -96,7 +96,7 @@ function MainWindow:SetNavigation()
 
     self.AtlasButton.Frame:SetPoint(
         "TOPLEFT",
-        self.ToolsButton.Frame,
+        self.APIButton.Frame,
         "BOTTOMLEFT",
         0,
         -4
@@ -129,12 +129,12 @@ function MainWindow:SetNavigation()
         )
     end)
 
-    self.APIButton = Toolbox.Classes.NavigationButton:New(
+    self.ToolsButton = Toolbox.Classes.NavigationButton:New(
         self.Navigation,
-        "API"
+        "Tools"
     )
 
-    self.APIButton.Frame:SetPoint(
+    self.ToolsButton.Frame:SetPoint(
         "TOPLEFT",
         self.SoundButton.Frame,
         "BOTTOMLEFT",
@@ -142,10 +142,10 @@ function MainWindow:SetNavigation()
         -4
     )
 
-    self.APIButton.Frame:SetScript("OnClick", function()
+    self.ToolsButton.Frame:SetScript("OnClick", function()
         self:SelectPage(
-            self.APIPage,
-            self.APIButton
+            self.ToolsPage,
+            self.ToolsButton
         )
     end)
 
