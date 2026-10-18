@@ -28,5 +28,6 @@
         "ScrollBoxConstants",
         "SearchBoxTemplate_OnTextChanged",
         "SOUNDKIT"
-    ]
+    ],
+    "Lua.type.weakUnionCheck": true
 }
