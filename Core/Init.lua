@@ -20,6 +20,13 @@ function Toolbox_OnAddonCompartmentClick(addonName, buttonName)
 end
 
 function Toolbox:Load()
+    if self.Loaded then
+        return
+    end
+
+    self.Database:Initialize()
+    self.Typography:Initialize()
+    self.UI.MinimapButton:Initialize()
     self.Loaded = true
 end
 

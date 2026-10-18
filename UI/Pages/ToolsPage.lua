@@ -251,6 +251,35 @@ function ToolsPage:CreateActions()
     self:AddActionButton(
         self.ReloadButton
     )
+
+    self.InterfaceVersionButton = CreateFrame(
+        "Button",
+        nil,
+        self.ActionsFrame,
+        "UIPanelButtonTemplate"
+    )
+
+    self.InterfaceVersionButton:SetSize(140, 24)
+    self.InterfaceVersionButton:SetText("Interface Version")
+
+    self.InterfaceVersionButton:SetScript("OnClick", function()
+        self:ShowInterfaceVersion()
+    end)
+
+    self:AddActionButton(
+        self.InterfaceVersionButton
+    )
+end
+
+function ToolsPage:ShowInterfaceVersion()
+    local interfaceVersion = select(4, GetBuildInfo())
+
+    Toolbox.UI.ExportDialog:Show(
+        "Interface Version",
+        tostring(interfaceVersion),
+        500,
+        180
+    )
 end
 
 function ToolsPage:AddActionButton(button)

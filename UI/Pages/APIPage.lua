@@ -2,6 +2,14 @@ local AddonName, Toolbox = ...
 
 local APIPage = {}
 
+local DOCUMENTATION_ROLES = {
+    GameFontHighlight = "body",
+    GameFontNormalLarge = "heading",
+    GameFontHighlightLarge = "signature",
+    GameFontNormal = "section",
+    GameFontDisable = "metadata",
+}
+
 local TABLE_TYPE_LABELS = {
     Structure = "Structure",
     Enumeration = "Enumeration",
@@ -441,9 +449,6 @@ function APIPage:CreateDocument()
     self.CategoryMeasure = self.DocumentFrame:CreateFontString(nil, "ARTWORK", "GameFontDisable")
     self.CategoryMeasure:SetPoint("TOPLEFT", self.DocumentFrame, "TOPLEFT")
     self.CategoryMeasure:SetAlpha(0)
-    self.ListRowHeight = math.ceil(self.FunctionMeasure:GetFontHeight()) + 10
-    self.HeadingRowHeight = math.ceil(self.HeadingMeasure:GetFontHeight()) + 8
-    self.CategoryRowHeight = math.ceil(self.CategoryMeasure:GetFontHeight()) + 2
 
     local view = CreateScrollBoxListLinearView(12, 12, 12, 12, 0)
     view:SetElementExtentCalculator(function(_, record)
@@ -471,11 +476,43 @@ function APIPage:CreateDocument()
         end
 
         self:RefreshDocumentLayout()
-
-        if self.DocumentDataProvider then
-            self.DocumentScrollBox:ScrollToBegin(ScrollBoxConstants.NoScrollInterpolation)
-        end
     end)
+
+    self:RefreshCatalogTypography()
+end
+
+function APIPage:RefreshCatalogTypography()
+    if not self.DocumentView then
+        return
+    end
+    local typography = Toolbox.Typography
+    local settings = typography:GetSettings("apiBrowser")
+    if self.CatalogFamily == settings.family and self.CatalogSizeOffset == settings.sizeOffset then
+        return
+    end
+
+    self.FunctionMeasure:SetFontObject(typography:GetFont("apiBrowser", "body"))
+    self.HeadingMeasure:SetFontObject(typography:GetFont("apiBrowser", "heading"))
+    self.CategoryMeasure:SetFontObject(typography:GetFont("apiBrowser", "metadata"))
+    self.NoResultsText:SetFontObject(typography:GetFont("apiBrowser", "body"))
+    self.ListRowHeight = math.ceil(self.FunctionMeasure:GetFontHeight()) + 10
+    self.HeadingRowHeight = math.ceil(self.HeadingMeasure:GetFontHeight()) + 8
+    self.CategoryRowHeight = math.ceil(self.CategoryMeasure:GetFontHeight()) + 2
+    self.MeasurementWidth = nil
+    self:RefreshDocumentLayout(true)
+    self.CatalogFamily = settings.family
+    self.CatalogSizeOffset = settings.sizeOffset
+end
+
+function APIPage:RefreshDocumentationTypography()
+    if not self.DetailContent or not self.SelectedAPI then
+        return
+    end
+    local offset = self.DetailScrollFrame:GetVerticalScroll()
+    self:RenderSelectedDetail()
+    self.DetailScrollFrame:UpdateScrollChildRect()
+    local maximum = math.max(self.DetailContent:GetHeight() - self.DetailScrollFrame:GetHeight(), 0)
+    self.DetailScrollFrame:SetVerticalScroll(math.min(offset, maximum))
 end
 
 function APIPage:CreateSearchBox()
@@ -617,6 +654,8 @@ function APIPage:InitializeRow(frame, record)
     frame.Text:SetPoint("TOPLEFT", frame, "TOPLEFT", leftInset, -topGap)
 
     if tableEntry then
+        frame.TypeText:SetFontObject(Toolbox.Typography:GetFont("apiBrowser", "metadata"))
+        frame.TypeText:SetJustifyH("RIGHT")
         frame.TypeText:ClearAllPoints()
         frame.TypeText:SetWidth(self.TableTypeWidth)
         frame.TypeText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -topGap)
@@ -636,9 +675,9 @@ function APIPage:InitializeRow(frame, record)
         end
     end
 
-    frame.Text:SetFontObject(heading and "GameFontNormalLarge"
-        or category and "GameFontDisable"
-        or "GameFontHighlight")
+    frame.Text:SetFontObject(Toolbox.Typography:GetFont("apiBrowser",
+        heading and "heading" or category and "metadata" or "body"))
+    frame.Text:SetJustifyH("LEFT")
     frame.Text:SetText(record.primaryText or record.text)
 
     local secondaryText = record.secondaryText
@@ -659,6 +698,8 @@ function APIPage:InitializeRow(frame, record)
         end
 
         frame.SecondaryText:ClearAllPoints()
+        frame.SecondaryText:SetFontObject(Toolbox.Typography:GetFont("apiBrowser", "metadata"))
+        frame.SecondaryText:SetJustifyH("LEFT")
         frame.SecondaryText:SetPoint("TOPLEFT", frame, "TOPLEFT", self.ListSecondaryOffset, -topGap)
         frame.SecondaryText:SetWidth(self.ListSecondaryWidth)
         frame.SecondaryText:SetText(secondaryText)
@@ -799,7 +840,8 @@ function APIPage:AddDetailText(text, font, gap, indent)
     label:ClearAllPoints()
     label:SetPoint("TOPLEFT", self.DetailContent, "TOPLEFT", indent, -self.DetailCursor)
     label:SetWidth(math.max(self.DetailContentWidth - indent - 12, 1))
-    label:SetFontObject(font)
+    label:SetFontObject(Toolbox.Typography:GetFont("documentation", DOCUMENTATION_ROLES[font]))
+    label:SetJustifyH("LEFT")
     label:SetText(text)
     label:Show()
 
@@ -856,6 +898,11 @@ function APIPage:AddDetailColumns(name, value, secondaryLines, eventPayload)
     local leftWidth = math.min(260, math.max(math.floor((self.DetailContentWidth - 24) * 0.34), 1))
     local rightX = 12 + leftWidth + 12
     local rightWidth = math.max(self.DetailContentWidth - rightX - 12, 1)
+
+    row.Name:SetFontObject(Toolbox.Typography:GetFont("documentation", "body"))
+    row.Value:SetFontObject(Toolbox.Typography:GetFont("documentation", "body"))
+    row.Value:SetTextColor(0.8, 0.8, 0.8)
+    row.Secondary:SetFontObject(Toolbox.Typography:GetFont("documentation", "metadata"))
 
     row.Name:ClearAllPoints()
     row.Name:SetPoint("TOPLEFT", self.DetailContent, "TOPLEFT", 12, -self.DetailCursor)
@@ -947,7 +994,8 @@ function APIPage:AddTableGridRow(name, typeText, thirdText, documentation, isHea
         self.TableGridRows[self.TableGridRowCount] = row
     end
 
-    local font = isHeader and "GameFontDisable" or "GameFontHighlight"
+    local font = Toolbox.Typography:GetFont("documentation", isHeader and "metadata" or "body")
+    row.Documentation:SetFontObject(Toolbox.Typography:GetFont("documentation", "metadata"))
     self.DetailCursor = self.DetailCursor + (isHeader and 2 or 8)
 
     row.Name:SetFontObject(font)
@@ -1624,8 +1672,8 @@ function APIPage:RenderTableDetail()
     self.DetailRendering = false
 end
 
-function APIPage:RefreshDocumentLayout()
-    if self.LayoutRefreshing or not self.Page.Frame:IsVisible() then
+function APIPage:RefreshDocumentLayout(force)
+    if self.LayoutRefreshing or (not force and not self.Page.Frame:IsVisible()) then
         return
     end
 
@@ -1642,6 +1690,7 @@ function APIPage:RefreshDocumentLayout()
     end
 
     self.LayoutRefreshing = true
+    local scrollPercentage = self.DocumentScrollBox:GetScrollPercentage()
     self.MeasurementWidth = textWidth
     local listEntryWidth = math.max(textWidth - 12, 1)
     self.ListPrimaryWidth = math.max(math.floor((listEntryWidth - 12) * 0.62), 1)
@@ -1664,6 +1713,8 @@ function APIPage:RefreshDocumentLayout()
         self.DocumentView:ClearElementExtentData()
         self.DocumentScrollBox:FullUpdate(ScrollBoxConstants.UpdateImmediately)
     end
+
+    self.DocumentScrollBox:SetScrollPercentage(scrollPercentage, ScrollBoxConstants.NoScrollInterpolation)
 
     self.LayoutRefreshing = false
 end

@@ -23,10 +23,37 @@ function ExportDialog:Initialize()
     self.Window:SetFrameStrata("FULLSCREEN_DIALOG")
 
     self:CreateLayout()
+    self:RefreshTypography()
 
     self.Window.Frame:HookScript("OnHide", function()
         self.EditBox:ClearFocus()
     end)
+end
+
+function ExportDialog:RefreshTypography()
+    if not self.Editor then
+        return
+    end
+
+    local settings = Toolbox.Typography:GetSettings("output")
+    if self.FontFamily == settings.family and self.SizeOffset == settings.sizeOffset then
+        return
+    end
+
+    local scrollBox = self.Editor:GetScrollBox()
+    local scrollPercentage = scrollBox:GetScrollPercentage()
+    local font = Toolbox.Typography:GetFont("output", "export")
+    -- EventEditBox:ApplyText must retain this font when the dialog is reopened.
+    self.EditBox.fontName = font
+    -- Keep the export role's native size and leave the text and selection intact.
+    self.Editor:SetFontObject(font)
+    scrollBox:SetScrollPercentage(scrollPercentage, ScrollBoxConstants.NoScrollInterpolation)
+    if self.Editor:HasFocus() then
+        self.Editor:ScrollCursorIntoView(false)
+    end
+
+    self.FontFamily = settings.family
+    self.SizeOffset = settings.sizeOffset
 end
 
 function ExportDialog:CreateLayout()

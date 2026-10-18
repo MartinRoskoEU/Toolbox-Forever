@@ -4,6 +4,7 @@ ignore:
   - .vscode
   - .gitignore
   - README.md
+  - Tests
 
 license-output: LICENSE
 

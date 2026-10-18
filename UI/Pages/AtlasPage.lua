@@ -15,6 +15,7 @@ function AtlasPage:Initialize(parent)
     )
 
     self:CreateLayout()
+    self:RefreshTypography()
     self:SetupKeyboard()
 end
 
@@ -89,6 +90,50 @@ function AtlasPage:UpdateBrowserLayout()
         0,
         0
     )
+    self:UpdatePreviewLayout()
+end
+
+function AtlasPage:RefreshTypography()
+    if not self.AtlasView or not self.PreviewName then
+        return
+    end
+    local typography = Toolbox.Typography
+    local settings = typography:GetSettings("atlasBrowser")
+    if self.FontFamily == settings.family and self.SizeOffset == settings.sizeOffset then
+        return
+    end
+    local percentage = self.AtlasScrollBox:GetScrollPercentage()
+    local font = typography:GetFont("atlasBrowser", "entry")
+    -- SetElementExtent also clears cached measurements; keep its explicit row height.
+    self.AtlasView:SetElementExtent(math.max(22, math.ceil(font:GetFontHeight()) + 12))
+    self.AtlasScrollBox:ForEachFrame(function(button)
+        button.Text:SetFontObject(font)
+        button.Text:SetJustifyH("LEFT")
+    end)
+    self.AtlasScrollBox:FullUpdate(ScrollBoxConstants.UpdateImmediately)
+    self.AtlasScrollBox:SetScrollPercentage(percentage, ScrollBoxConstants.NoScrollInterpolation)
+    self.PreviewName:SetFontObject(typography:GetFont("atlasBrowser", "body"))
+    self.PreviewSize:SetFontObject(typography:GetFont("atlasBrowser", "metadata"))
+    self:UpdatePreviewLayout()
+    self.FontFamily = settings.family
+    self.SizeOffset = settings.sizeOffset
+end
+
+function AtlasPage:UpdatePreviewLayout()
+    if not self.PreviewName then
+        return
+    end
+    local rightInset = 16 + self.ExportButton:GetWidth() + 12
+    local textWidth = math.max(self.PreviewFrame:GetWidth() - 16 - rightInset, 1)
+    self.PreviewName:SetWidth(textWidth)
+    self.PreviewSize:SetWidth(textWidth)
+    local nameBottom = math.max(38, 16 + math.ceil(self.PreviewSize:GetStringHeight()) + 6)
+    self.PreviewName:ClearAllPoints()
+    self.PreviewName:SetPoint("BOTTOMLEFT", self.PreviewFrame, "BOTTOMLEFT", 16, nameBottom)
+    self.PreviewName:SetPoint("BOTTOMRIGHT", self.PreviewFrame, "BOTTOMRIGHT", -rightInset, nameBottom)
+    local footerHeight = math.max(76, nameBottom + math.ceil(self.PreviewName:GetStringHeight()) + 16)
+    self.PreviewCanvas:SetPoint("BOTTOMRIGHT", self.PreviewFrame, "BOTTOMRIGHT", -16, footerHeight)
+    self:UpdatePreviewTextureSize()
 end
 
 function AtlasPage:CreateAtlasList()
@@ -179,7 +224,8 @@ function AtlasPage:CreateAtlasList()
 
     local view = CreateScrollBoxListLinearView()
 
-    view:SetElementExtent(22)
+    view:SetElementExtent(math.max(22,
+        math.ceil(Toolbox.Typography:GetFont("atlasBrowser", "entry"):GetFontHeight()) + 12))
 
     view:SetElementInitializer(
         "TruncatedButtonTemplate",
@@ -204,8 +250,9 @@ function AtlasPage:CreateAtlasList()
                 0
             )
 
+            button.Text:SetFontObject(Toolbox.Typography:GetFont("atlasBrowser", "entry"))
             button.Text:SetJustifyH("LEFT")
-            button.Text:SetFontObject("GameFontHighlightSmall")
+            button.Text:SetMaxLines(1)
 
             if not button.SelectionTexture then
                 button.SelectionTexture = button:CreateTexture(
@@ -232,6 +279,7 @@ function AtlasPage:CreateAtlasList()
         end
     )
 
+    self.AtlasView = view
     ScrollUtil.InitScrollBoxListWithScrollBar(
         self.AtlasScrollBox,
         self.AtlasScrollBar,
@@ -348,6 +396,8 @@ function AtlasPage:CreatePreview()
     )
 
     self.PreviewName:SetJustifyH("LEFT")
+    self.PreviewName:SetWordWrap(true)
+    self.PreviewName:SetNonSpaceWrap(true)
 
     self.PreviewSize = self.PreviewFrame:CreateFontString(
         nil,
@@ -364,6 +414,8 @@ function AtlasPage:CreatePreview()
     )
 
     self.PreviewSize:SetJustifyH("LEFT")
+    self.PreviewSize:SetWordWrap(true)
+    self.PreviewSize:SetNonSpaceWrap(true)
 
     self.ExportButton = CreateFrame(
         "Button",
@@ -468,6 +520,7 @@ function AtlasPage:ClearAtlasPreview()
     self.PreviewName:SetText("")
     self.PreviewSize:SetText("")
     self.ExportButton:Disable()
+    self:UpdatePreviewLayout()
 end
 
 function AtlasPage:ShowAtlasPreview(atlasName)
@@ -493,7 +546,7 @@ function AtlasPage:ShowAtlasPreview(atlasName)
 
     self.ExportButton:Enable()
 
-    self:UpdatePreviewTextureSize()
+    self:UpdatePreviewLayout()
 end
 
 function AtlasPage:UpdatePreviewTextureSize()

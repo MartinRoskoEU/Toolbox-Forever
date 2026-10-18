@@ -15,7 +15,33 @@ function SoundPage:Initialize(parent)
     )
 
     self:CreateLayout()
+    self:RefreshTypography()
     self:SetupKeyboard()
+end
+
+function SoundPage:RefreshTypography()
+    if not self.SoundView or not self.SoundName then
+        return
+    end
+    local typography = Toolbox.Typography
+    local settings = typography:GetSettings("soundBrowser")
+    if self.FontFamily == settings.family and self.SizeOffset == settings.sizeOffset then
+        return
+    end
+    local percentage = self.SoundScrollBox:GetScrollPercentage()
+    local font = typography:GetFont("soundBrowser", "entry")
+    -- SetElementExtent also clears cached measurements; keep its explicit row height.
+    self.SoundView:SetElementExtent(math.max(22, math.ceil(font:GetFontHeight()) + 12))
+    self.SoundScrollBox:ForEachFrame(function(button)
+        button.Text:SetFontObject(font)
+        button.Text:SetJustifyH("LEFT")
+    end)
+    self.SoundScrollBox:FullUpdate(ScrollBoxConstants.UpdateImmediately)
+    self.SoundScrollBox:SetScrollPercentage(percentage, ScrollBoxConstants.NoScrollInterpolation)
+    self.SoundName:SetFontObject(typography:GetFont("soundBrowser", "body"))
+    self.SoundID:SetFontObject(typography:GetFont("soundBrowser", "metadata"))
+    self.FontFamily = settings.family
+    self.SizeOffset = settings.sizeOffset
 end
 
 function SoundPage:CreateLayout()
@@ -181,7 +207,8 @@ function SoundPage:CreateSoundList()
 
     local view = CreateScrollBoxListLinearView()
 
-    view:SetElementExtent(22)
+    view:SetElementExtent(math.max(22,
+        math.ceil(Toolbox.Typography:GetFont("soundBrowser", "entry"):GetFontHeight()) + 12))
 
     view:SetElementInitializer(
         "TruncatedButtonTemplate",
@@ -206,8 +233,9 @@ function SoundPage:CreateSoundList()
                 0
             )
 
+            button.Text:SetFontObject(Toolbox.Typography:GetFont("soundBrowser", "entry"))
             button.Text:SetJustifyH("LEFT")
-            button.Text:SetFontObject("GameFontHighlightSmall")
+            button.Text:SetMaxLines(1)
 
             if not button.SelectionTexture then
                 button.SelectionTexture = button:CreateTexture(
@@ -235,6 +263,7 @@ function SoundPage:CreateSoundList()
         end
     )
 
+    self.SoundView = view
     ScrollUtil.InitScrollBoxListWithScrollBar(
         self.SoundScrollBox,
         self.SoundScrollBar,
@@ -317,6 +346,8 @@ function SoundPage:CreateDetails()
     )
 
     self.SoundName:SetJustifyH("LEFT")
+    self.SoundName:SetWordWrap(true)
+    self.SoundName:SetNonSpaceWrap(true)
 
     self.SoundID = self.DetailsFrame:CreateFontString(
         nil,
@@ -333,6 +364,9 @@ function SoundPage:CreateDetails()
     )
 
     self.SoundID:SetJustifyH("LEFT")
+    self.SoundID:SetPoint("TOPRIGHT", self.SoundName, "BOTTOMRIGHT", 0, -8)
+    self.SoundID:SetWordWrap(true)
+    self.SoundID:SetNonSpaceWrap(true)
 
     self.PlayButton = CreateFrame(
         "Button",
